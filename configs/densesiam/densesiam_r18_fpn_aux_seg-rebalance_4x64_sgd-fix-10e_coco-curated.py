@@ -13,9 +13,7 @@ model = dict(
     loss_simsiam_weight=1.0,
     loss_seg_weight=1.0,
     rebalance_seg=True,
-    kernel_norm=True,
     loss_kernel_cross_weight=0.1,
-    # loss_kernel_within_weight=0,
     num_classes=27)
 
 img_norm_cfg = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
@@ -34,7 +32,7 @@ data = dict(
             img_postfix='.jpg',
             seg_postfix='.png',
             list_file='data/curated/train2017/Coco164kFull_Stuff_Coarse_7.txt',
-            file_client_args={{ _base_.file_client_args }},
+            file_client_args={{_base_.file_client_args}},
             return_label=False),
         inv_pipelines=[
             dict(type='ReplayRandomColorBrightness', x=0.3, p=0.8),
@@ -66,7 +64,7 @@ data = dict(
             img_postfix='.jpg',
             seg_postfix='.png',
             list_file='data/curated/val2017/Coco164kFull_Stuff_Coarse_7.txt',
-            file_client_args={{ _base_.file_client_args }},
+            file_client_args={{_base_.file_client_args}},
             return_label=True),
         img_out_pipeline=out_pipeline,
         res=320))

@@ -4,10 +4,9 @@ import time
 import mmcv
 import numpy as np
 import torch
+from densesiam.utils import get_root_logger
 from mmcv.runner import HOOKS, Hook
 from PIL import Image
-from densesiam.utils import get_root_logger
-
 
 try:
     import faiss

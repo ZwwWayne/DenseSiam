@@ -8,13 +8,13 @@ import warnings
 
 import mmcv
 import torch
-from mmcv import Config, DictAction
-from mmcv.runner import get_dist_info, init_dist
-from mmcv.utils import collect_env, get_git_hash
 from densesiam.apis import set_random_seed, train_architecture
 from densesiam.datasets import build_dataset
 from densesiam.models import build_architecture
 from densesiam.utils import get_root_logger
+from mmcv import Config, DictAction
+from mmcv.runner import get_dist_info, init_dist
+from mmcv.utils import collect_env, get_git_hash
 
 
 def parse_args():

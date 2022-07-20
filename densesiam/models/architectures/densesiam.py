@@ -53,19 +53,12 @@ class DenseSimSiam(BaseArchitecture):
                  loss_aux_weight='auto',
                  loss_simsiam_weight=1.0,
                  loss_seg_weight=0,
-                 kernel_sim=False,
-                #  detach_softmask=False,
                  loss_kernel_cross_weight=0,
-                #  loss_kernel_within_weight=0,
-                #  detach_feats_before_seg=False,
-                 kernel_norm=False,
                  kernel_temp=0.1,
                  kernel_with_pred=True,
                  kernel_proj_final_bn=True,
                  kernel_within_p=True,
-                 kernel_use_z=True,
                  rebalance_seg=False,
-                 with_kernel_proj=True,
                  num_classes=27):
         super(DenseSimSiam, self).__init__()
         self.backbone = resnet.__dict__[arch](pretrained=pretrained)
@@ -76,13 +69,9 @@ class DenseSimSiam(BaseArchitecture):
         self.loss_simsiam_weight = loss_simsiam_weight
         self.rebalance_seg = rebalance_seg
         self.loss_kernel_cross_weight = loss_kernel_cross_weight
-        # self.loss_kernel_within_weight = loss_kernel_within_weight
-        # self.detach_softmask = detach_softmask
         self.kernel_with_pred = kernel_with_pred
         self.kernel_proj_final_bn = kernel_proj_final_bn
         self.kernel_within_p = kernel_within_p
-        self.kernel_use_z = kernel_use_z
-        # self.detach_feats_before_seg = detach_feats_before_seg
 
         proj_convs = []
         for i in range(num_proj_convs):
@@ -145,36 +134,23 @@ class DenseSimSiam(BaseArchitecture):
                 nn.BatchNorm1d(global_hid_channels), nn.ReLU(inplace=True),
                 nn.Linear(global_hid_channels, global_out_channels))
 
-        self.with_kernel_proj = with_kernel_proj
-        if with_kernel_proj and (self.loss_kernel_cross_weight > 0):
-            proj_convs = []
-            for i in range(num_kernel_proj_convs):
-                proj_convs.append(
-                    nn.Linear(
-                        out_channels, out_channels, bias=False))
-                proj_convs.append(nn.BatchNorm1d(out_channels))
-                proj_convs.append(nn.ReLU(inplace=True))
+        proj_convs = []
+        for i in range(num_kernel_proj_convs):
             proj_convs.append(
-                nn.Linear(
-                    out_channels, out_channels, bias=False))
-            if self.kernel_proj_final_bn:
-                proj_convs.append(
-                    nn.BatchNorm1d(out_channels, affine=False))
-            self.kernel_projector = nn.Sequential(*proj_convs)
+                nn.Linear(out_channels, out_channels, bias=False))
+            proj_convs.append(nn.BatchNorm1d(out_channels))
+            proj_convs.append(nn.ReLU(inplace=True))
+        proj_convs.append(nn.Linear(out_channels, out_channels, bias=False))
+        if self.kernel_proj_final_bn:
+            proj_convs.append(nn.BatchNorm1d(out_channels, affine=False))
+        self.kernel_projector = nn.Sequential(*proj_convs)
+        if self.kernel_with_pred:
+            norm_layer = nn.BatchNorm1d(hid_channels)
+            self.kernel_predictor = nn.Sequential(
+                nn.Linear(out_channels, hid_channels, bias=False), norm_layer,
+                nn.ReLU(inplace=True), nn.Linear(hid_channels, out_channels))
 
-            if self.kernel_with_pred:
-                norm_layer = nn.BatchNorm1d(hid_channels)
-                self.kernel_predictor = nn.Sequential(
-                    nn.Linear(
-                        out_channels, hid_channels, bias=False),
-                    norm_layer, nn.ReLU(inplace=True),
-                    nn.Linear(hid_channels, out_channels))
-
-        # self.kernel_sim = kernel_sim
-        self.kernel_norm = kernel_norm
         self.kernel_temp = kernel_temp
-        # if self.kernel_sim:
-        #     self.kernel_sim = nn.CosineSimilarity(dim=-1)
         self.criterion = CESimilarity
         self.loss_seg = HardCESimilarity
         self = nn.SyncBatchNorm.convert_sync_batchnorm(self)
@@ -201,88 +177,39 @@ class DenseSimSiam(BaseArchitecture):
             return losses
 
         num_classes = z1.size(1)
-        # if self.hard_kernel_mask:
-        #     seg1 = z1.argmax(dim=1)
-        #     seg2 = z2.argmax(dim=1)
-        #     mask1 = F.one_hot(seg1, num_classes).permute(0, 3, 1, 2)
-        #     mask2 = F.one_hot(seg2, num_classes).permute(0, 3, 1, 2)
-        #     # if self.kernel_norm_mask:
-        #     #     print('mask normed')
-        #     #     mask1 = mask1 / mask1.sum(dim=[2, 3], keepdim=True).clamp(min=1)
-        #     #     mask2 = mask2 / mask2.sum(dim=[2, 3], keepdim=True).clamp(min=1)
-        #     sim1_ignore = mask1.sum(dim=[2, 3]) == 0
-        #     sim2_ignore = mask2.sum(dim=[2, 3]) == 0
-        #     sim_keep = (sim1_ignore + sim2_ignore) == 0
-        # else:
         mask1 = z1.softmax(dim=1)
         mask2 = z2.softmax(dim=1)
-        # if self.detach_softmask:
-        #     mask1 = mask1.detach()
-        #     mask2 = mask2.detach()
-        # if self.kernel_norm_mask:
-        #     print('mask normed')
-        #     mask1 = mask1 / mask1.sum(dim=[2, 3], keepdim=True)
-        #     mask2 = mask2 / mask2.sum(dim=[2, 3], keepdim=True)
-        # sim_keep = None
+
         ctr1 = torch.einsum('bnhw,bchw->bnc', mask1, feats_v1)
         ctr2 = torch.einsum('bnhw,bchw->bnc', mask2, feats_v2)
 
-        if self.with_kernel_proj:
-            ctr_z1 = self.kernel_projector(ctr1.view(-1, ctr1.size(-1)))
-            ctr_z2 = self.kernel_projector(ctr2.view(-1, ctr2.size(-1)))
-            if self.kernel_with_pred:
-                ctr_p1 = self.kernel_predictor(ctr_z1).view_as(ctr1)
-                ctr_p2 = self.kernel_predictor(ctr_z2).view_as(ctr2)
-            else:
-                ctr_p1 = ctr_z1.view_as(ctr1)
-                ctr_p2 = ctr_z2.view_as(ctr2)
-
-            ctr_z2 = ctr_z2.view_as(ctr2)
-            ctr_z1 = ctr_z1.view_as(ctr1)
+        ctr_z1 = self.kernel_projector(ctr1.view(-1, ctr1.size(-1)))
+        ctr_z2 = self.kernel_projector(ctr2.view(-1, ctr2.size(-1)))
+        if self.kernel_with_pred:
+            ctr_p1 = self.kernel_predictor(ctr_z1).view_as(ctr1)
+            ctr_p2 = self.kernel_predictor(ctr_z2).view_as(ctr2)
         else:
-            ctr_z1 = ctr1
-            ctr_z2 = ctr2
-            ctr_p1 = ctr1
-            ctr_p2 = ctr2
+            ctr_p1 = ctr_z1.view_as(ctr1)
+            ctr_p2 = ctr_z2.view_as(ctr2)
+        ctr_z2 = ctr_z2.view_as(ctr2)
+        ctr_z1 = ctr_z1.view_as(ctr1)
 
         if self.loss_kernel_cross_weight >= 0:
-            # if hasattr(self, 'kernel_detach_z') and self.kernel_detach_z:
-            #     ctr_z2 = ctr_z2.detach()
-            #     ctr_z1 = ctr_z1.detach()
-            #     print('ctr_z detached')
-            # if not self.kernel_sim:
+
             gt = torch.eye(num_classes).to(ctr1.device).bool()
-            if self.kernel_norm:
-                ctr_p1 = F.normalize(ctr_p1, p=2, dim=-1)
-                ctr_p2 = F.normalize(ctr_p2, p=2, dim=-1)
-                ctr_z1 = F.normalize(ctr_z1, p=2, dim=-1)
-                ctr_z2 = F.normalize(ctr_z2, p=2, dim=-1)
-            mat12 = torch.einsum('bnc,bmc->bnm', ctr_p1, ctr_z2) / self.kernel_temp
-            mat21 = torch.einsum('bnc,bmc->bnm', ctr_p2, ctr_z1) / self.kernel_temp
-            loss_cross = -(mat12.log_softmax(dim=-1)[:, gt].mean()
-                           + mat21.log_softmax(dim=-1)[:, gt].mean())*0.5
-            # else:
-            # if sim_keep is not None:
-            #     loss_cross = -(self.kernel_sim(ctr_p1, ctr_z2)[sim_keep].mean()
-            #                    + self.kernel_sim(ctr_p2, ctr_z1)[sim_keep].mean())*0.5
-            # else:
-            #     loss_cross = -(self.kernel_sim(ctr_p1, ctr_z2).mean()
-                        #    + self.kernel_sim(ctr_p2, ctr_z1).mean())*0.5
+            ctr_p1 = F.normalize(ctr_p1, p=2, dim=-1)
+            ctr_p2 = F.normalize(ctr_p2, p=2, dim=-1)
+            ctr_z1 = F.normalize(ctr_z1, p=2, dim=-1)
+            ctr_z2 = F.normalize(ctr_z2, p=2, dim=-1)
+            mat12 = torch.einsum('bnc,bmc->bnm', ctr_p1,
+                                 ctr_z2) / self.kernel_temp
+            mat21 = torch.einsum('bnc,bmc->bnm', ctr_p2,
+                                 ctr_z1) / self.kernel_temp
+            loss_cross = -(mat12.log_softmax(dim=-1)[:, gt].mean() +
+                           mat21.log_softmax(dim=-1)[:, gt].mean()) * 0.5
+
             losses.update(loss_kernel_cross=loss_cross *
                           self.loss_kernel_cross_weight)
-
-        # if self.loss_kernel_within_weight > 0:
-        #     if self.kernel_within_p:
-        #         mat1 = torch.einsum('bnc,bmc->bnm', ctr_p1, ctr_p1)
-        #         mat2 = torch.einsum('bnc,bmc->bnm', ctr_p2, ctr_p2)
-        #     else:
-        #         mat1 = torch.einsum('bnc,bmc->bnm', ctr_p1, ctr_z1)
-        #         mat2 = torch.einsum('bnc,bmc->bnm', ctr_p2, ctr_z2)
-        #     loss_with1 = -mat1.log_softmax(dim=-1)[:, gt]
-        #     loss_with2 = -mat2.log_softmax(dim=-1)[:, gt]
-        #     loss_within = (loss_with1 + loss_with2) * 0.5
-        #     losses.update(loss_kernel_within=loss_within *
-        #                   self.loss_kernel_within_weight)
 
         return losses
 
@@ -292,20 +219,14 @@ class DenseSimSiam(BaseArchitecture):
 
         img_v1 = self.eqv_pipeline(idx.cpu().numpy(), img_v1)
         feats_v1, mid1 = self.encode_feature(img_v1, return_res5=True)
-        # if self.detach_feats_before_seg:
-        #     z1 = self.projector(feats_v1.detach())
-        # else:
-        #     
+
         z1 = self.projector(feats_v1)
         p1 = self.predictor(z1)
 
         feats_v2, mid2 = self.encode_feature(img_v2, return_res5=True)
         # random parameters in eqv_pipeline are all in numpy
         feats_v2 = self.eqv_pipeline(idx.cpu().numpy(), feats_v2)
-        # if self.detach_feats_before_seg:
-        #     z2 = self.projector(feats_v2.detach())
-        # else:
-        #     
+
         z2 = self.projector(feats_v2)
         p2 = self.predictor(z2)
 
@@ -314,16 +235,13 @@ class DenseSimSiam(BaseArchitecture):
 
         loss = dict(loss_simsiam=loss_simsiam * self.loss_simsiam_weight)
 
-        if self.kernel_use_z:
-            loss_kernels = self.kernel_contrast(feats_v1, feats_v2, z1, z2)
-        else:
-            loss_kernels = self.kernel_contrast(feats_v1, feats_v2, p1, p2)
-            print('use p with kernel')
+        loss_kernels = self.kernel_contrast(feats_v1, feats_v2, z1, z2)
         loss.update(loss_kernels)
 
         if self.loss_seg_weight > 0:
-            loss_seg = (self.loss_seg(z1, z1.detach(), self.rebalance_seg).mean() +
-                        self.loss_seg(z2, z2.detach(), self.rebalance_seg).mean()) * 0.5
+            loss_seg = (self.loss_seg(
+                z1, z1.detach(), self.rebalance_seg).mean() + self.loss_seg(
+                    z2, z2.detach(), self.rebalance_seg).mean()) * 0.5
             loss.update(loss_seg=loss_seg * self.loss_seg_weight)
 
         if self.num_aux_classes > 0:

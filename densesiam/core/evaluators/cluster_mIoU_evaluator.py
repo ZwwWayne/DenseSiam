@@ -1,13 +1,13 @@
 import numpy as np
 import torch
 import torch.nn.functional as F
+from densesiam.core.evaluators.builder import EVALUATORS
+from densesiam.utils import get_root_logger
+from densesiam.utils.comm import all_gather, is_main_process, synchronize
 from mmcv.utils import print_log
 # from sklearn.utils.linear_assignment_ import linear_assignment
 from scipy.optimize import linear_sum_assignment
 from terminaltables import AsciiTable
-from densesiam.core.evaluators.builder import EVALUATORS
-from densesiam.utils import get_root_logger
-from densesiam.utils.comm import all_gather, is_main_process, synchronize
 
 from .base import DatasetEvaluator
 

@@ -1,6 +1,6 @@
 matplotlib
 numpy
 six
-terminaltables
 tensorboard
+terminaltables
 torch

@@ -5,11 +5,17 @@ from mmcv.runner.hooks import HOOKS, Hook
 @HOOKS.register_module()
 class MultiStepAlternationHook(Hook):
     """Data-loading sampler for distributed training.
+
     When distributed training, it is only useful in conjunction with
     :obj:`EpochBasedRunner`, while :obj:`IterBasedRunner` achieves the same
     purpose with :obj:`IterLoader`.
     """
-    def __init__(self, projector_interval=194, backbone_interval=194, neck_with_backbone=False, neck_with_head=False):
+
+    def __init__(self,
+                 projector_interval=194,
+                 backbone_interval=194,
+                 neck_with_backbone=False,
+                 neck_with_head=False):
         self.projector_train_iters = 0
         self.backbone_train_iters = 0
         self.projector_interval = projector_interval
@@ -89,7 +95,6 @@ class MultiStepAlternationHook(Hook):
                 self.train_projector = True
                 self.train_backbone = False
         else:
-            raise ValueError(
-                'Unexpected self.train_projector='
-                f'{self.train_projector}, and '
-                f'self.train_backbone={self.train_backbone}')
+            raise ValueError('Unexpected self.train_projector='
+                             f'{self.train_projector}, and '
+                             f'self.train_backbone={self.train_backbone}')

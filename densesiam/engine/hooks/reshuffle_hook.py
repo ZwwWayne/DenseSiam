@@ -1,11 +1,15 @@
-from mmcv.runner import HOOKS, Hook
 from densesiam.utils import get_root_logger
+from mmcv.runner import HOOKS, Hook
 
 
 @HOOKS.register_module()
 class ReshuffleDatasetHook(Hook):
 
-    def __init__(self, reset_data_random=False, reshuffle=True,):
+    def __init__(
+        self,
+        reset_data_random=False,
+        reshuffle=True,
+    ):
         self.logger = get_root_logger()
         self.reset_data_random = reset_data_random
         self.reshuffle = reshuffle

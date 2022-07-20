@@ -4,9 +4,9 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import torchvision.transforms.functional as TF
+from densesiam.datasets.builder import PIPELINES
 from PIL import Image, ImageFilter
 from torchvision import transforms
-from densesiam.datasets.builder import PIPELINES
 
 try:
     from torchvision.transforms import InterpolationMode

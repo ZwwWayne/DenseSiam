@@ -1,8 +1,8 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 from math import cos, pi
 
-from mmcv.runner.hooks.hook import HOOKS, Hook
 from densesiam.utils import get_root_logger
+from mmcv.runner.hooks.hook import HOOKS, Hook
 
 
 class LrUpdaterHook(Hook):

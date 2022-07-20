@@ -7,14 +7,14 @@ import warnings
 
 import mmcv
 import torch
+from densesiam.core.evaluators import build_evaluator
+from densesiam.datasets import build_dataloader, build_dataset
+from densesiam.models import build_architecture
 from mmcv import Config, DictAction
 from mmcv.cnn import fuse_conv_bn
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import (get_dist_info, init_dist, load_checkpoint,
                          wrap_fp16_model)
-from densesiam.core.evaluators import build_evaluator
-from densesiam.datasets import build_dataloader, build_dataset
-from densesiam.models import build_architecture
 
 
 def parse_args():

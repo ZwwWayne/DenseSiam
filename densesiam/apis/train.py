@@ -5,15 +5,14 @@ import warnings
 
 import numpy as np
 import torch
-from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-from mmcv.runner import (HOOKS, DistSamplerSeedHook, EpochBasedRunner,
-                         Fp16OptimizerHook, build_optimizer,
-                         build_runner)
-from mmcv.utils import build_from_cfg
 from densesiam.core.evaluators import build_evaluator
 from densesiam.datasets import build_dataloader, build_dataset
-from densesiam.utils import get_root_logger
 from densesiam.engine.hooks.optimizer import OptimizerHook
+from densesiam.utils import get_root_logger
+from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
+from mmcv.runner import (HOOKS, DistSamplerSeedHook, EpochBasedRunner,
+                         Fp16OptimizerHook, build_optimizer, build_runner)
+from mmcv.utils import build_from_cfg
 
 
 def set_random_seed(seed, deterministic=False):

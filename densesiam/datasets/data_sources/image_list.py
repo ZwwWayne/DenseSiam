@@ -1,8 +1,8 @@
 import io
 import os
 
-from PIL import Image
 import mmcv
+from PIL import Image
 
 from ..builder import DATASOURCES
 from .utils import McLoader
@@ -37,7 +37,7 @@ class ImageList(object):
 
     def get_length(self):
         return len(self.fns)
-    
+
     def load_img(self, filename):
         if self.file_client is None:
             self.file_client = mmcv.FileClient(**self.file_client_args)

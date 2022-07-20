@@ -83,6 +83,10 @@ sh ./tools/slurm_test.sh $PARTITION $JOBNAME $CONFIG $CHECKPOINT --eval mIoU
 - CONFIG: the config files under the directory `configs/`
 - JOBNAME: the name of the job that are necessary for slurm
 
+## Acknowledgement
+
+This codebase is based on [MMCV](https://github.com/open-mmlab/mmcv) and it benefits a lot from [PiCIE](https://github.com/janghyuncho/PiCIE) [MMSelfSup](https://github.com/open-mmlab/mmselfsup), and [Detectron2](https://github.com/facebookresearch/detectron2).
+
 ## License
 
 This project is released under the [Apache 2.0 license](LICENSE).

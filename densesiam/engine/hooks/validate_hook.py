@@ -2,9 +2,9 @@ import time
 
 import mmcv
 import torch
+from densesiam.utils.comm import get_rank
 from mmcv.runner import HOOKS, Hook, get_dist_info
 from torch.utils.data import Dataset
-from densesiam.utils.comm import get_rank
 
 
 @HOOKS.register_module()

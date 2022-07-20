@@ -3,12 +3,12 @@ import os.path as osp
 import numpy as np
 import torch
 import torchvision.transforms.functional as TF
-from PIL import Image
-from torchvision.transforms import Compose
 from densesiam.datasets.base import BaseDataset
 from densesiam.datasets.builder import DATASETS, DATASOURCES, PIPELINES
 from densesiam.datasets.pipelines import IndexCompose
 from densesiam.utils import get_root_logger
+from PIL import Image
+from torchvision.transforms import Compose
 
 try:
     from torchvision.transforms import InterpolationMode

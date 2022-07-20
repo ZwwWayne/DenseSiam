@@ -1,13 +1,18 @@
 from math import cos, pi
 
-from mmcv.runner.hooks.hook import HOOKS, Hook
 from densesiam.utils import get_root_logger
+from mmcv.runner.hooks.hook import HOOKS, Hook
 
 
 @HOOKS.register_module()
 class LossWeightUpdateHook(Hook):
 
-    def __init__(self, warmup_ratio=0, by_epoch=True, policy='linear', interval=1, key_names=['loss_kernel_cross_weight']):
+    def __init__(self,
+                 warmup_ratio=0,
+                 by_epoch=True,
+                 policy='linear',
+                 interval=1,
+                 key_names=['loss_kernel_cross_weight']):
 
         self.by_epoch = by_epoch
         self.policy = policy
@@ -31,8 +36,7 @@ class LossWeightUpdateHook(Hook):
         # NOTE: when resuming from a checkpoint, if 'initial_lr' is not saved,
         # it will be set according to the optimizer params
         self.base_lw = [
-            getattr(runner.model.module, key)
-            for key in self.key_names
+            getattr(runner.model.module, key) for key in self.key_names
         ]
 
     def before_train_epoch(self, runner):

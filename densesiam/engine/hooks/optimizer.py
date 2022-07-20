@@ -3,12 +3,11 @@ import copy
 from collections import defaultdict
 from itertools import chain
 
-from torch.nn.utils import clip_grad
-
-from mmcv.utils import TORCH_VERSION, _BatchNorm, digit_version
+from mmcv.runner import HOOKS, Hook
 from mmcv.runner.dist_utils import allreduce_grads
 from mmcv.runner.fp16_utils import LossScaler, wrap_fp16_model
-from mmcv.runner import HOOKS, Hook
+from mmcv.utils import TORCH_VERSION, _BatchNorm, digit_version
+from torch.nn.utils import clip_grad
 
 try:
     # If PyTorch version >= 1.6.0, torch.cuda.amp.GradScaler would be imported

@@ -2,11 +2,11 @@ import mmcv
 import numpy as np
 import torch
 import torchvision.transforms.functional as TF
-from PIL import Image
-from torchvision.transforms import Compose
 from densesiam.datasets.base import BaseDataset
 from densesiam.datasets.builder import DATASETS, DATASOURCES, PIPELINES
 from densesiam.utils import get_root_logger
+from PIL import Image
+from torchvision.transforms import Compose
 
 try:
     from torchvision.transforms import InterpolationMode
@@ -44,7 +44,7 @@ class CocoEvalDataset(BaseDataset):
         img, label = self.data_source.get_sample(idx)
         assert isinstance(img, Image.Image) and isinstance(label, Image.Image), \
             'The output from the data source must be an Img, got: {}. \
-            Please ensure that the list file does not contain labels.'                                                                                                                                                                                                                                                                                                                                                              .format(
+            Please ensure that the list file does not contain labels.'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      .format(
             type(img))
         img, label = self.transform_data(img, label)
         return dict(idx=idx, img=img, label=label)

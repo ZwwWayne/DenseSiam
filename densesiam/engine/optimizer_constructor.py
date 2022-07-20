@@ -3,12 +3,12 @@ import re
 import warnings
 
 import torch
+from densesiam.utils import get_root_logger
 from mmcv.runner.optimizer import (OPTIMIZER_BUILDERS, OPTIMIZERS,
                                    DefaultOptimizerConstructor)
 from mmcv.utils import _BatchNorm, _InstanceNorm, build_from_cfg
 from mmcv.utils.ext_loader import check_ops_exist
 from torch.nn import GroupNorm, LayerNorm
-from densesiam.utils import get_root_logger
 
 
 @OPTIMIZER_BUILDERS.register_module()

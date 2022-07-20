@@ -1,10 +1,10 @@
 import os
 import os.path as osp
 
-from PIL import Image
 from densesiam.datasets.builder import DATASOURCES
 from densesiam.datasets.data_sources.image_list import ImageList
 from densesiam.utils import get_root_logger
+from PIL import Image
 
 
 @DATASOURCES.register_module(force=True)

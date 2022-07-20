@@ -5,6 +5,7 @@ from mmcv.runner.hooks import HOOKS, Hook
 @HOOKS.register_module()
 class DistAugSeed(Hook):
     """Data-loading sampler for distributed training.
+
     When distributed training, it is only useful in conjunction with
     :obj:`EpochBasedRunner`, while :obj:`IterBasedRunner` achieves the same
     purpose with :obj:`IterLoader`.

@@ -24,7 +24,7 @@ data = dict(
             img_postfix='.jpg',
             seg_postfix='.png',
             list_file='data/curated/train2017/Coco164kFull_Stuff_Coarse_7.txt',
-            file_client_args={{ _base_.file_client_args }},
+            file_client_args={{_base_.file_client_args}},
             return_label=False),
         inv_pipelines=[
             dict(type='ReplayRandomColorBrightness', x=0.3, p=0.8),
@@ -55,7 +55,7 @@ data = dict(
             img_postfix='.jpg',
             seg_postfix='.png',
             list_file='data/curated/val2017/Coco164kFull_Stuff_Coarse_7.txt',
-            file_client_args={{ _base_.file_client_args }},
+            file_client_args={{_base_.file_client_args}},
             return_label=True),
         img_out_pipeline=out_pipeline,
         res=320))
