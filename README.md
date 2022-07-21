@@ -4,9 +4,9 @@
 
 This is an official release of the paper **Dense Siamese Network for Dense Unsupervised Learning**.
 
-> [**Dense Siamese Network for Dense Unsupervised Learning**](https://arxiv.org/abs/2203.11075),
-> Wenwei Zhang, Jiangmiao Pang, Kai Chen, Chen Change Loy
-> In: Proc. European Conference on Computer Vision (ECCV), 2022
+> [**Dense Siamese Network for Dense Unsupervised Learning**](https://arxiv.org/abs/2203.11075),  
+> Wenwei Zhang, Jiangmiao Pang, Kai Chen, Chen Change Loy  
+> In: Proc. European Conference on Computer Vision (ECCV), 2022  
 > [[arXiv](https://arxiv.org/abs/2203.11075)][[project page](https://www.mmlab-ntu.com/project/densesiam/index.html)][[Bibetex](https://github.com/ZwwWayne/DenseSiam#citation)]
 
 ## Results
@@ -25,7 +25,7 @@ We also re-implemented PiCIE based on the [official code release](https://github
 
 | Backbone | Method | Lr Schd | COCO Mask mAP| Config | Pre-train Download |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| R-50  | DenseSiam | 1x        | 34.0 |[config](configs/) | [model]() &#124;  [log]() |
+| R-50  | DenseSiam | 1x        | 36.8 |[config](configs/) | [model]() &#124;  [log]() |
 
 ## Installation
 
@@ -33,9 +33,12 @@ It requires the following OpenMMLab packages:
 
 - MIM >= 0.1.5
 - MMCV-full >= v1.3.14
+- MMDetection
+- MMSegmentation
+- MMSelfSup
 
 ```bash
-pip install openmim mmdet mmsegmentation
+pip install openmim mmdet mmsegmentation mmselfsup
 mim install mmcv-full
 ```
 

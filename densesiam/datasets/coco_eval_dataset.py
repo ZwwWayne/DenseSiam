@@ -42,10 +42,11 @@ class CocoEvalDataset(BaseDataset):
 
     def __getitem__(self, idx):
         img, label = self.data_source.get_sample(idx)
-        assert isinstance(img, Image.Image) and isinstance(label, Image.Image), \
-            'The output from the data source must be an Img, got: {}. \
-            Please ensure that the list file does not contain labels.'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      .format(
-            type(img))
+        assert isinstance(img, Image.Image) \
+            and isinstance(label, Image.Image), \
+            ('The output from the data source must be an Img, got: '
+             f'{type(img)}. Please ensure that the list file does '
+             'not contain labels.')
         img, label = self.transform_data(img, label)
         return dict(idx=idx, img=img, label=label)
 
